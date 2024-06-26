@@ -1,35 +1,90 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from "react";
+import "./App.css";
+
+type Talk = {
+  title: string;
+  abstract: string;
+};
+
+type Error = {
+  title?: string;
+  abstract?: string;
+};
+
+const savedTalk: Talk = {
+  title: "React",
+  abstract: "A JavaScript library for building user interfaces",
+};
+
+const newTalk: Talk = {
+  title: "",
+  abstract: "",
+};
+
+type Status = "idle" | "submitted" | "submitting";
+
+type Touched = {
+  title?: boolean;
+  abstract?: boolean;
+};
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [talk, setTalk] = useState(newTalk);
+  const [status, setStatus] = useState<Status>("idle");
+  const [touched, setTouched] = useState<Touched>({});
+
+  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setTalk({ ...talk, [e.target.name]: e.target.value });
+  }
+
+  function validateForm() {
+    const errors: Error = {};
+
+    if (talk.title === "") {
+      errors.title = "Title is required";
+    }
+    if (talk.abstract === "") {
+      errors.abstract = "Abstract is required";
+    }
+    return errors;
+  }
+
+  // Derived state
+  const errors = validateForm();
 
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        setStatus("submitted");
+        console.log(talk);
+      }}
+    >
+      <label>Title</label>
+      <input
+        type="text"
+        name="title"
+        value={talk.title}
+        onBlur={() => setTouched({ ...touched, title: true })}
+        onChange={handleChange}
+      />
+      {status === "submitted" ||
+        (touched.title && <p style={{ color: "red" }}>{errors.title}</p>)}
+
+      <label>Abstract</label>
+      <input
+        type="text"
+        name="abstract"
+        value={talk.abstract}
+        onBlur={() => setTouched({ ...touched, abstract: true })}
+        onChange={handleChange}
+      />
+      {status === "submitted" ||
+        (touched.abstract && <p style={{ color: "red" }}>{errors.abstract}</p>)}
+
+      <input type="submit" value="Save" />
+    </form>
+  );
 }
 
-export default App
+export default App;
